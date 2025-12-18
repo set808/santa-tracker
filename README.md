@@ -37,10 +37,10 @@ This project showcases the full New Relic observability platform by monitoring S
 ## 🎄 Features
 
 ### Real-Time Tracking
-- **Interactive Map** - Follow Santa's sleigh across the globe with real-time position updates (Leaflet + OpenStreetMap)
 - **Live Metrics Dashboard** - Speed, altitude, fuel levels, and navigation status
 - **Reindeer Performance** - Individual health, energy, and morale tracking for all 9 reindeer
 - **Workshop Operations** - Elf productivity, toy production rates, and inventory management
+- **Delivery Progress** - Regional delivery tracking and global completion percentage
 - **Weather Monitoring** - Current conditions affecting Santa's flight path
 - **Incident Management** - Real-time alerts for chimney obstructions, airspace conflicts, and more
 
@@ -63,25 +63,25 @@ This project showcases the full New Relic observability platform by monitoring S
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                    Frontend (React + Vite)                   │
+│              Queries New Relic via NerdGraph                 │
 └────────────────────────┬────────────────────────────────────┘
                          │
-            ┌────────────┴───────────┬────────────────┐
-            │                        │                │
-    ┌───────▼────────┐      ┌───────▼────────┐  ┌───▼────────┐
-    │   WebSocket    │      │   NerdGraph    │  │  Leaflet   │
-    │    Gateway     │      │     Proxy      │  │    Map     │
-    │   (Port 3008)  │      │   (Port 3007)  │  │  (OSM/Web) │
-    └───────┬────────┘      └────────────────┘  └────────────┘
-            │
-    ┌───────┴──────────────────────────────────────────┐
-    │              Microservices Mesh                   │
-    ├───────────┬───────────┬──────────┬───────────────┤
-    │  Sleigh   │ Reindeer  │ Workshop │   Delivery    │
-    │  :3001    │  :3002    │  :3003   │    :3004      │
-    ├───────────┼───────────┼──────────┼───────────────┤
-    │  Weather  │ Incident  │          │               │
-    │  :3005    │  :3006    │          │               │
-    └───────────┴───────────┴──────────┴───────────────┘
+                         │
+                 ┌───────▼────────┐
+                 │   NerdGraph    │
+                 │     Proxy      │
+                 │   (Port 3007)  │
+                 └───────┬────────┘
+                         │
+    ┌────────────────────┴──────────────────────────────┐
+    │              Microservices Mesh                    │
+    ├───────────┬───────────┬──────────┬────────────────┤
+    │  Sleigh   │ Reindeer  │ Workshop │   Delivery     │
+    │  :3001    │  :3002    │  :3003   │    :3004       │
+    ├───────────┼───────────┼──────────┼────────────────┤
+    │  Weather  │ Incident  │          │                │
+    │  :3005    │  :3006    │          │                │
+    └───────────┴───────────┴──────────┴────────────────┘
                          │
                          │ All instrumented with
                          ▼ New Relic APM
@@ -95,9 +95,8 @@ This project showcases the full New Relic observability platform by monitoring S
 
 1. **Simulation Engines** continuously generate realistic Santa operations data
 2. **Microservices** send custom events and metrics to New Relic
-3. **WebSocket Gateway** aggregates data and broadcasts to connected clients
-4. **Frontend** displays real-time data and queries NerdGraph for historical analytics
-5. **NerdGraph Proxy** securely proxies NRQL queries to New Relic Insights API
+3. **Frontend** queries NerdGraph for real-time and historical data
+4. **NerdGraph Proxy** securely proxies NRQL queries to New Relic
 
 ## 🚀 Quick Start
 
@@ -186,25 +185,6 @@ To create a dashboard:
 3. Add charts using the NRQL queries above
 4. Customize visualizations (line charts, billboards, tables, etc.)
 
-## 🎨 Christmas Eve vs Route Planning Mode
-
-The application operates in two modes:
-
-### Route Planning Mode (Default)
-Active when it's NOT December 24-25. Features:
-- Simulates route optimization algorithms
-- Shows efficiency scoring and analysis
-- Slower update rates (planning vs real-time)
-- All systems at optimal performance
-
-### Christmas Eve Mode (Dec 24-25)
-Activates automatically on Christmas Eve:
-- Real-time delivery tracking following actual time zones
-- Faster update rates (1-2 second intervals)
-- Progressive performance degradation (fatigue, fuel depletion)
-- Active incident generation (weather, chimneys, airspace)
-- Regional delivery statistics updated live
-
 ## 📁 Project Structure
 
 ```
@@ -235,13 +215,12 @@ santa-tracker/
 
 This project demonstrates:
 
-1. **Distributed Tracing** - Follow requests across 8 microservices
+1. **Distributed Tracing** - Follow requests across microservices
 2. **Custom Events** - Create and query domain-specific telemetry
 3. **Custom Metrics** - Track business KPIs in real-time
 4. **Log Correlation** - Connect logs to transactions and traces
 5. **NRQL Mastery** - Query and analyze telemetry data
-6. **Real-Time Data Streaming** - WebSocket-based live updates
-7. **Microservices Architecture** - Service mesh with distributed monitoring
+6. **Microservices Architecture** - Service mesh with distributed monitoring
 
 ## 🎁 Santa Problem → Real-World Mapping
 
@@ -268,7 +247,6 @@ This project demonstrates:
 - Weather Service: `3005`
 - Incident Service: `3006`
 - NerdGraph Proxy: `3007`
-- WebSocket Gateway: `3008`
 
 ### Environment Variables
 
@@ -282,7 +260,6 @@ See `.env.example` for complete list. Key variables:
 **Optional:**
 - `NEW_RELIC_REGION` - Set to `EU` for EU data center (defaults to `US`)
 - `VITE_NERDGRAPH_PROXY_URL` - NerdGraph proxy URL (defaults to `http://localhost:3007`)
-- `VITE_WEBSOCKET_URL` - WebSocket gateway URL (defaults to `ws://localhost:3008/ws`)
 
 ## 📖 Additional Resources
 
@@ -299,15 +276,10 @@ See `.env.example` for complete list. Key variables:
 - For EU accounts, verify `NEW_RELIC_REGION=EU` is set
 
 ### Frontend not displaying data
-- Check WebSocket connection status in browser console (F12)
 - Verify all backend services are running: `docker-compose ps`
 - Check NerdGraph proxy is accessible at `http://localhost:3007/health`
-- Check WebSocket gateway at `http://localhost:3008/health`
-
-### Map not loading
-- Check internet connection (map tiles load from OpenStreetMap)
-- Verify Leaflet CSS is loading in browser dev tools
-- Check browser console for errors
+- Check browser console (F12) for any JavaScript errors
+- Verify New Relic is receiving data by checking the APM service in New Relic One
 
 ### Environment variable issues
 - Ensure you copied `.env.example` to `.env`
@@ -337,11 +309,9 @@ Built with ❤️ for the New Relic community to demonstrate real-world observab
 - [Node.js](https://nodejs.org) - Backend runtime
 - [Express](https://expressjs.com) - Web framework
 - [TypeScript](https://www.typescriptlang.org/) - Type safety
-- [Leaflet](https://leafletjs.com) - Interactive mapping
-- [OpenStreetMap](https://www.openstreetmap.org) - Map tiles
 - [Docker](https://www.docker.com) - Containerization
-- [Zustand](https://github.com/pmndrs/zustand) - State management
 - [Recharts](https://recharts.org) - Data visualization
+- [Tailwind CSS](https://tailwindcss.com) - Utility-first CSS framework
 
 ---
 
