@@ -1,0 +1,32 @@
+{
+  "name": "santa-tracker-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Santa Tracker with Full New Relic Observability - A festive demonstration of real-time monitoring",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "dotenv concurrently \"npm run dev:services\" \"npm run dev:frontend\"",
+    "dev:services": "concurrently \"npm run dev -w sleigh-service\" \"npm run dev -w reindeer-service\" \"npm run dev -w workshop-service\" \"npm run dev -w delivery-service\" \"npm run dev -w weather-service\" \"npm run dev -w incident-service\" \"npm run dev -w nerdgraph-proxy\"",
+    "dev:frontend": "npm run dev -w frontend",
+    "build": "npm run build --workspaces",
+    "build:frontend": "npm run build -w frontend",
+    "build:services": "npm run build --workspaces --if-present",
+    "docker:up": "docker-compose up --build",
+    "docker:down": "docker-compose down",
+    "clean": "rm -rf node_modules packages/*/node_modules packages/*/dist"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "dotenv-cli": "^11.0.0",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.3"
+  }
+}

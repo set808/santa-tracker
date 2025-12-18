@@ -1,0 +1,232 @@
+# Docker Compose configuration for Santa Tracker
+# This single file works for both development and production modes
+#
+# Production Mode (default):
+#   - Uses compiled TypeScript code
+#   - No volume mounts
+#   - Run: docker-compose up --build
+#
+# Development Mode:
+#   - Uncomment 'volumes' and 'command' sections below
+#   - Enables hot reload with ts-node-dev
+#   - Run: docker-compose up --build
+
+networks:
+  santa-tracker:
+    driver: bridge
+
+services:
+  # ============================================================
+  # Backend Microservices (6 Data Services)
+  # ============================================================
+
+  sleigh-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+      args:
+        SERVICE_NAME: sleigh-service
+        SERVICE_PORT: 3001
+    container_name: sleigh-service
+    ports:
+      - "3001:3001"
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - NEW_RELIC_APP_NAME=Santa-Sleigh-Service
+      - NEW_RELIC_REGION=${NEW_RELIC_REGION:-US}
+    networks:
+      - santa-tracker
+    restart: unless-stopped
+    # Development mode: Uncomment below for hot reload
+    # command: npm run dev
+    # volumes:
+    #   - ./packages/sleigh-service/src:/app/packages/sleigh-service/src
+    #   - ./packages/shared-types/src:/app/packages/shared-types/src
+
+  reindeer-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+      args:
+        SERVICE_NAME: reindeer-service
+        SERVICE_PORT: 3002
+    container_name: reindeer-service
+    ports:
+      - "3002:3002"
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+      - PORT=3002
+      - NEW_RELIC_APP_NAME=Santa-Reindeer-Service
+      - NEW_RELIC_REGION=${NEW_RELIC_REGION:-US}
+    networks:
+      - santa-tracker
+    restart: unless-stopped
+    # Development mode: Uncomment below for hot reload
+    # command: npm run dev
+    # volumes:
+    #   - ./packages/reindeer-service/src:/app/packages/reindeer-service/src
+    #   - ./packages/shared-types/src:/app/packages/shared-types/src
+
+  workshop-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+      args:
+        SERVICE_NAME: workshop-service
+        SERVICE_PORT: 3003
+    container_name: workshop-service
+    ports:
+      - "3003:3003"
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+      - PORT=3003
+      - NEW_RELIC_APP_NAME=Santa-Workshop-Service
+      - NEW_RELIC_REGION=${NEW_RELIC_REGION:-US}
+    networks:
+      - santa-tracker
+    restart: unless-stopped
+    # Development mode: Uncomment below for hot reload
+    # command: npm run dev
+    # volumes:
+    #   - ./packages/workshop-service/src:/app/packages/workshop-service/src
+    #   - ./packages/shared-types/src:/app/packages/shared-types/src
+
+  delivery-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+      args:
+        SERVICE_NAME: delivery-service
+        SERVICE_PORT: 3004
+    container_name: delivery-service
+    ports:
+      - "3004:3004"
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+      - PORT=3004
+      - NEW_RELIC_APP_NAME=Santa-Delivery-Service
+      - NEW_RELIC_REGION=${NEW_RELIC_REGION:-US}
+    networks:
+      - santa-tracker
+    restart: unless-stopped
+    # Development mode: Uncomment below for hot reload
+    # command: npm run dev
+    # volumes:
+    #   - ./packages/delivery-service/src:/app/packages/delivery-service/src
+    #   - ./packages/shared-types/src:/app/packages/shared-types/src
+
+  weather-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+      args:
+        SERVICE_NAME: weather-service
+        SERVICE_PORT: 3005
+    container_name: weather-service
+    ports:
+      - "3005:3005"
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+      - PORT=3005
+      - NEW_RELIC_APP_NAME=Santa-Weather-Service
+      - NEW_RELIC_REGION=${NEW_RELIC_REGION:-US}
+    networks:
+      - santa-tracker
+    restart: unless-stopped
+    # Development mode: Uncomment below for hot reload
+    # command: npm run dev
+    # volumes:
+    #   - ./packages/weather-service/src:/app/packages/weather-service/src
+    #   - ./packages/shared-types/src:/app/packages/shared-types/src
+
+  incident-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+      args:
+        SERVICE_NAME: incident-service
+        SERVICE_PORT: 3006
+    container_name: incident-service
+    ports:
+      - "3006:3006"
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+      - PORT=3006
+      - NEW_RELIC_APP_NAME=Santa-Incident-Service
+      - NEW_RELIC_REGION=${NEW_RELIC_REGION:-US}
+    networks:
+      - santa-tracker
+    restart: unless-stopped
+    # Development mode: Uncomment below for hot reload
+    # command: npm run dev
+    # volumes:
+    #   - ./packages/incident-service/src:/app/packages/incident-service/src
+    #   - ./packages/shared-types/src:/app/packages/shared-types/src
+
+  # ============================================================
+  # NerdGraph Proxy Service
+  # ============================================================
+
+  nerdgraph-proxy:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+      args:
+        SERVICE_NAME: nerdgraph-proxy
+        SERVICE_PORT: 3007
+    container_name: nerdgraph-proxy
+    ports:
+      - "3007:3007"
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+      - PORT=3007
+      - NEW_RELIC_APP_NAME=Santa-NerdGraph-Proxy
+      - NEW_RELIC_REGION=${NEW_RELIC_REGION:-US}
+    networks:
+      - santa-tracker
+    restart: unless-stopped
+    # Development mode: Uncomment below for hot reload
+    # command: npm run dev
+    # volumes:
+    #   - ./packages/nerdgraph-proxy/src:/app/packages/nerdgraph-proxy/src
+    #   - ./packages/shared-types/src:/app/packages/shared-types/src
+
+  # ============================================================
+  # Frontend (React + Vite)
+  # ============================================================
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+      args:
+        - VITE_NERDGRAPH_PROXY_URL=http://localhost:3007
+    container_name: santa-frontend
+    ports:
+      - "5173:5173"
+    networks:
+      - santa-tracker
+    depends_on:
+      - nerdgraph-proxy
+    restart: unless-stopped
+    # Development mode: Uncomment below for hot reload
+    # command: npm run dev -- --host 0.0.0.0
+    # volumes:
+    #   - ./packages/frontend/src:/app/packages/frontend/src
+    #   - ./packages/frontend/public:/app/packages/frontend/public
+    #   - ./packages/shared-types/src:/app/packages/shared-types/src

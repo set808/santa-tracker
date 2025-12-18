@@ -1,0 +1,38 @@
+# Dockerfile for Santa Tracker frontend
+# Works for both development and production modes
+
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Build arguments for Vite environment variables
+ARG VITE_NERDGRAPH_PROXY_URL
+
+# Copy and install shared-types
+COPY packages/shared-types ./packages/shared-types
+WORKDIR /app/packages/shared-types
+RUN npm install && npm run build
+WORKDIR /app
+
+# Copy and install frontend
+COPY packages/frontend ./packages/frontend
+WORKDIR /app/packages/frontend
+# Install dependencies using file: protocol for shared-types
+RUN npm install --save file:../shared-types && npm install
+
+# Build the frontend for production
+RUN npm run build
+WORKDIR /app
+
+# Expose Vite port
+EXPOSE 5173
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
+  CMD node -e "require('http').get('http://127.0.0.1:5173', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})" || exit 1
+
+# Start the frontend
+# Production mode: serve built assets with Vite preview (port 5173)
+# Dev mode: docker-compose will override this with: npm run dev
+WORKDIR /app/packages/frontend
+CMD ["npm", "run", "preview", "--", "--host", "0.0.0.0", "--port", "5173"]

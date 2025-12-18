@@ -1,0 +1,44 @@
+# Dockerfile for all Santa Tracker backend services
+# This single Dockerfile is used for all 8 backend microservices via build arguments
+
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Build arguments
+ARG SERVICE_NAME
+ARG SERVICE_PORT
+
+# Copy and install shared-types
+COPY packages/shared-types ./packages/shared-types
+WORKDIR /app/packages/shared-types
+RUN npm install && npm run build
+WORKDIR /app
+
+# Copy and install service dependencies
+COPY packages/${SERVICE_NAME}/package.json ./packages/${SERVICE_NAME}/
+WORKDIR /app/packages/${SERVICE_NAME}
+# Install dependencies using file: protocol for shared-types
+RUN npm install --save file:../shared-types && npm install
+WORKDIR /app
+
+# Copy service-specific files
+COPY packages/${SERVICE_NAME}/tsconfig.json ./packages/${SERVICE_NAME}/
+COPY packages/${SERVICE_NAME}/newrelic.js ./packages/${SERVICE_NAME}/
+COPY packages/${SERVICE_NAME}/src ./packages/${SERVICE_NAME}/src
+
+# Set environment variables
+ENV NODE_ENV=production
+ENV PORT=${SERVICE_PORT}
+
+# Expose the service port
+EXPOSE ${SERVICE_PORT}
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:' + process.env.PORT + '/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
+
+# Start the service using ts-node with transpile-only (simpler for side projects, no build step needed)
+# For dev mode with hot reload, docker-compose will override this with: npm run dev --workspace=${SERVICE_NAME}
+WORKDIR /app/packages/${SERVICE_NAME}
+CMD ["npx", "ts-node", "--transpile-only", "-r", "./newrelic.js", "src/index.ts"]
